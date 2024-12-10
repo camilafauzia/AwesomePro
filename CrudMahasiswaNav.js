@@ -8,7 +8,7 @@ import { faPlusCircle, faUserPen, faUserGraduate } from '@fortawesome/free-solid
 import WebView from 'react-native-webview';
 import Createdata from './Createdata';
 import Datamahasiswa from './Listdata';
-import EditData from './Editdata'
+import Editdata from './Editdata';
 
 
 function HomeScreen() {
@@ -25,7 +25,7 @@ function DataMahasiswaScreen() {
 
 function EditScreen() {
   return (
-    <EditData/>
+    <Editdata/>
   );
 }
 

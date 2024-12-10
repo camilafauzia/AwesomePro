@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import { SafeAreaView, View, ScrollView, TextInput, Text,  Button, StyleSheet } from 'react-native';
 
 const Createdata = () => {
-const jsonUrl = 'http://10.0.2.2:3000/mahasiswa';
+const jsonUrl = 'http://192.168.100.53:3000/mahasiswa';
 const [first_name, setFirstName] = useState('');
 const [last_name, setLastName] = useState('');
 const [kelas, setKelas] = useState('');
@@ -17,7 +17,7 @@ const submit = () => {
       kelas: kelas,
       gender: gender,
     };
-    fetch('http://10.0.2.2:3000/mahasiswa', {
+    fetch('http://192.168.100.53:3000/mahasiswa', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
