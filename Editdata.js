@@ -1,23 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, ScrollView, TextInput, Text, Button, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { SafeAreaView, View, TextInput, Text, Button, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faPenToSquare, faGraduationCap } from '@fortawesome/free-solid-svg-icons';
+import { faPlaceOfWorship } from '@fortawesome/free-solid-svg-icons';
 
 const Createdata = () => {
-  const jsonUrl = 'http://192.168.100.53:3000/mahasiswa';
-  const [first_name, setFirstName] = useState('');
-  const [last_name, setLastName] = useState('');
-  const [kelas, setKelas] = useState('');
-  const [gender, setGender] = useState('');
-  const [email, setEmail] = useState('');
-  const [selectedUser, setSelectedUser] = useState({});
+  const jsonUrl = 'http://192.168.100.30:3000/cabud'; // Ganti dengan URL sesuai server Anda
+  const [nama_cagarbudaya, setNamaCagarbudaya] = useState('');
+  const [kota, setKota] = useState('');
+  const [full_address, setFullAddress] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
   const [isLoading, setLoading] = useState(true);
   const [dataUser, setDataUser] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
   const submit = () => {
-    const data = { first_name, last_name, email, kelas, gender };
-    fetch(`http://192.168.100.53:3000/mahasiswa/${selectedUser.id}`, {
+    if (!selectedUser) {
+      Alert.alert('Pilih Data', 'Silakan pilih data yang ingin diubah.');
+      return;
+    }
+
+    if (!nama_cagarbudaya || !kota || !full_address) {
+      Alert.alert('Validasi Gagal', 'Semua field harus diisi.');
+      return;
+    }
+
+    const data = { nama_cagarbudaya, kota, full_address };
+
+    fetch(`${jsonUrl}/${selectedUser.id}`, {
       method: 'PATCH',
       headers: {
         'Accept': 'application/json',
@@ -25,93 +34,121 @@ const Createdata = () => {
       },
       body: JSON.stringify(data),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Gagal menyimpan data');
+        }
+        return response.json();
+      })
       .then(() => {
-        alert('Data tersimpan');
-        setFirstName('');
-        setLastName('');
-        setKelas('');
-        setGender('');
-        setEmail('');
+        Alert.alert('Sukses', 'Data berhasil diubah');
+        resetForm();
         refreshPage();
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        console.error(error);
+        Alert.alert('Error', 'Terjadi kesalahan saat menyimpan data');
+      });
   };
 
   const selectItem = (item) => {
     setSelectedUser(item);
-    setFirstName(item.first_name);
-    setLastName(item.last_name);
-    setKelas(item.kelas);
-    setGender(item.gender);
-    setEmail(item.email);
+    setNamaCagarbudaya(item.nama_cagarbudaya);
+    setKota(item.kota);
+    setFullAddress(item.full_address);
+  };
+
+  const resetForm = () => {
+    setSelectedUser(null);
+    setNamaCagarbudaya('');
+    setKota('');
+    setFullAddress('');
   };
 
   const refreshPage = () => {
     setRefresh(true);
     fetch(jsonUrl)
       .then((response) => response.json())
-      .then((json) => setDataUser(json))
-      .catch((error) => console.error(error))
+      .then((json) => {
+        console.log('cabud', json);
+        setDataUser(json);
+      })
+      .catch((error) => {
+        console.error(error);
+        Alert.alert('Error', 'Gagal mengambil data dari server');
+      })
       .finally(() => setRefresh(false));
   };
 
   useEffect(() => {
     fetch(jsonUrl)
       .then((response) => response.json())
-      .then((json) => setDataUser(json))
-      .catch((error) => console.error(error))
+      .then((json) => {
+        console.log('cabud', json);
+        setDataUser(json);
+      })
+      .catch((error) => {
+        console.error(error);
+        Alert.alert('Error', 'Gagal mengambil data dari server');
+      })
       .finally(() => setLoading(false));
   }, []);
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
       <View>
         {isLoading ? (
-          <View style={{ alignItems: 'center', marginTop: 20 }}>
+          <View style={styles.loadingContainer}>
             <Text style={styles.cardtitle}>Loading...</Text>
           </View>
         ) : (
           <View>
-            <ScrollView>
-              <View>
-                <Text style={styles.title}>Edit Data Mahasiswa</Text>
-                <View style={styles.form}>
-                  <TextInput style={styles.input} placeholder="Nama Depan" value={first_name} onChangeText={setFirstName} />
-                  <TextInput style={styles.input} placeholder="Nama Belakang" value={last_name} onChangeText={setLastName} />
-                  <TextInput style={styles.input} placeholder="Kelas" value={kelas} onChangeText={setKelas} />
-                  <TextInput style={styles.input} placeholder="Jenis Kelamin" value={gender} onChangeText={setGender} />
-                  <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} />
-                  <Button title="Edit" style={styles.button} onPress={submit} />
+            <FlatList
+              ListHeaderComponent={
+                <View style={styles.headerContainer}>
+                  <Text style={styles.title}>Edit Data Cagar Budaya</Text>
+                  <View style={styles.form}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Nama Cagar Budaya"
+                      value={nama_cagarbudaya}
+                      onChangeText={setNamaCagarbudaya}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Kota"
+                      value={kota}
+                      onChangeText={setKota}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Alamat Lengkap"
+                      value={full_address}
+                      onChangeText={setFullAddress}
+                    />
+                    <TouchableOpacity style={styles.button} onPress={submit}>
+                      <Text style={styles.buttonText}>Edit</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-              <FlatList
-                style={{ marginBottom: 10 }}
-                data={dataUser}
-                onRefresh={refreshPage}
-                refreshing={refresh}
-                keyExtractor={({ id }) => id.toString()}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => selectItem(item)}>
-                    <View style={styles.card}>
-                      <View style={styles.avatar}>
-                        <FontAwesomeIcon icon={faGraduationCap} size={50} />
-                      </View>
-                      <View>
-                        <Text style={styles.cardtitle}>
-                          {item.first_name} {item.last_name}
-                        </Text>
-                        <Text>{item.kelas}</Text>
-                        <Text>{item.gender}</Text>
-                      </View>
-                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end' }}>
-                        <FontAwesomeIcon icon={faPenToSquare} size={20} />
-                      </View>
+              }
+              data={dataUser}
+              onRefresh={refreshPage}
+              refreshing={refresh}
+              keyExtractor={(item, index) => (item?.id ? item.id.toString() : index.toString())}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => selectItem(item)}>
+                  <View style={styles.card}>
+                    <FontAwesomeIcon icon={faPlaceOfWorship} size={50} style={styles.icon} />
+                    <View style={styles.cardContent}>
+                      <Text style={styles.cardtitle}>{item.nama_cagarbudaya || 'Tidak Ada Nama'}</Text>
+                      <Text style={styles.cardText}>{item.kota || 'Tidak Ada Kota'}</Text>
+                      <Text style={styles.cardText}>{item.full_address || 'Tidak Ada Alamat'}</Text>
                     </View>
-                  </TouchableOpacity>
-                )}
-              />
-            </ScrollView>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
           </View>
         )}
       </View>
@@ -122,51 +159,84 @@ const Createdata = () => {
 export default Createdata;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5', // Background yang lebih cerah dan netral
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  headerContainer: {
+    backgroundColor: '#8a7a71', // Nuansa coklat lembut
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
   title: {
-    paddingVertical: 12,
-    backgroundColor: '#333',
-    color: 'white',
+    color: '#fff',
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   form: {
-    padding: 10,
-    marginBottom: 100,
+    padding: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#777',
+    borderColor: '#d1d1d1',
     borderRadius: 8,
     padding: 10,
-    width: '100%',
-    marginVertical: 5,
+    marginVertical: 8,
+    backgroundColor: '#f9f9f9',
   },
   button: {
-    marginVertical: 10,
+    backgroundColor: '#594a40', // Coklat gelap
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
   },
-  avatar: {
-    borderRadius: 100,
-    width: 80,
-  },
-  cardtitle: {
-    fontSize: 14,
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
   card: {
-      flexDirection: 'row',
-      padding: 20,
-      borderRadius: 10,
-      backgroundColor: 'white',
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 1,
-        height: 1,
-      },
-      shadowOpacity: 0.20,
-      shadowRadius: 1.41,
-      elevation: 2,
-      marginHorizontal: 20,
-      marginVertical: 7
-    },
+    flexDirection: 'row',
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+    marginHorizontal: 20,
+    marginVertical: 7,
+  },
+  icon: {
+    color: '#8a7a71', // Coklat lembut sesuai tema
+  },
+  cardContent: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  cardtitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#594a40', // Coklat gelap
+  },
+  cardText: {
+    fontSize: 14,
+    color: '#555',
+  },
 });

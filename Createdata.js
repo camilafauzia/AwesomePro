@@ -1,23 +1,19 @@
-import React, {useState} from 'react'
-import { SafeAreaView, View, ScrollView, TextInput, Text,  Button, StyleSheet } from 'react-native';
+import React, { useState } from 'react'
+import { SafeAreaView, View, ScrollView, TextInput, Text, Button, StyleSheet } from 'react-native';
 
 const Createdata = () => {
-const jsonUrl = 'http://192.168.100.53:3000/mahasiswa';
-const [first_name, setFirstName] = useState('');
-const [last_name, setLastName] = useState('');
-const [kelas, setKelas] = useState('');
-const [gender, setGender] = useState('');
-const [email, setEmail] = useState('');
+  const jsonUrl = 'http://192.168.100.30:3000/cabud';
+  const [nama_cagarbudaya, setNamaCagarbudaya] = useState('');
+  const [kota, setKota] = useState('');
+  const [full_address, setFullAddress] = useState('');
 
-const submit = () => {
+  const submit = () => {
     const data = {
-      first_name: first_name,
-      last_name: last_name,
-      email: email,
-      kelas: kelas,
-      gender: gender,
+      nama_cagarbudaya: nama_cagarbudaya,
+      kota: kota,
+      full_address: full_address,
     };
-    fetch('http://192.168.100.53:3000/mahasiswa', {
+    fetch('http://192.168.100.30:3000/cabud', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -25,62 +21,99 @@ const submit = () => {
       },
       body: JSON.stringify(data)
     })
+    .then((response) => response.json())
+    .then((json) => {
+      console.log(json);
+      alert('Data tersimpan');
+      setNamaCagarbudaya('');
+      setKota('');
+      setFullAddress('');
+    })
+  }
 
-    
-   .then((response) => response.json())
-   .then((json) => {
-     console.log(json);
-     alert('Data tersimpan');
-     setFirstName('');
-     setLastName('');
-     setEmail('');
-     setKelas('');
-     setGender('');
-   })
- }
-
- 
-    return (
-        <SafeAreaView>
-         <View>
-         <Text style={styles.title}>Tambah Data Mahasiswa</Text>
-           <ScrollView>
-            <TextInput style={styles.input} placeholder="Nama Depan" value={first_name} onChangeText={(value) => setFirstName(value)} />
-            <TextInput style={styles.input}placeholder="Nama Belakang" value={last_name} onChangeText={(value) => setLastName(value)} />
-            <TextInput style={styles.input}placeholder="Kelas" value={kelas} onChangeText={(value) => setKelas(value)} />
-            <TextInput style={styles.input}placeholder="Jenis Kelamin" value={gender} onChangeText={(value) => setGender(value)} />
-            <TextInput style={styles.input}placeholder="Email" value={email} onChangeText={(value) => setEmail(value)} />
-            <Button title="Simpan" style={styles.button} onPress={submit} />
-           </ScrollView>
-         </View>
-        </SafeAreaView>
-       )       
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={styles.title}>Tambah Data Cagar Budaya</Text>
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Nama Cagar Budaya"
+            value={nama_cagarbudaya}
+            onChangeText={(value) => setNamaCagarbudaya(value)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Kota"
+            value={kota}
+            onChangeText={(value) => setKota(value)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Alamat Lengkap"
+            value={full_address}
+            onChangeText={(value) => setFullAddress(value)}
+          />
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Simpan"
+              onPress={submit}
+              color="#755948"
+            />
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  )
 }
 
-export default Createdata
+export default Createdata;
 
 const styles = StyleSheet.create({
-    title: {
-      paddingVertical: 12,
-      backgroundColor: '#333',
-      color: 'white',
-      fontSize: 20,
-      fontWeight: 'bold',
-      textAlign: 'center',
-    },
-    form: {
-      padding: 10,
-      marginBottom: 100,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#777',
-        borderRadius: 8,
-        padding: 10,
-        width: '100%',
-        marginVertical: 5,
-      },
-      button: {
-        marginVertical: 10,
-      }
-     })
+  container: {
+    flex: 1,
+    backgroundColor: '#f4f4f4',
+  },
+  scrollContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  title: {
+    paddingVertical: 16,
+    backgroundColor: '#3e2723',
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    borderRadius: 10,
+    width: '100%',
+    marginBottom: 20,
+  },
+  form: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 10,
+    fontSize: 16,
+    backgroundColor: '#fafafa',
+  },
+  buttonContainer: {
+    marginTop: 15,
+    backgroundColor: '#3e2723',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+});
